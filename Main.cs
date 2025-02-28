@@ -19,6 +19,7 @@ namespace CTD {
 
         void Start() {
             gameObject.AddComponent<NetworkEventCallbacks>();
+            GameModeManager.AddHandler<ConnectionTolerantDeathmatch>(ConnectionTolerantDeathmatchHandler.GameModeID, new ConnectionTolerantDeathmatchHandler());
         }
     }
 

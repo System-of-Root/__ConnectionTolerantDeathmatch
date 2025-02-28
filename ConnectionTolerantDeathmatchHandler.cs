@@ -8,7 +8,7 @@ namespace CTD {
     public class ConnectionTolerantDeathmatchHandler:RWFGameModeHandler<ConnectionTolerantDeathmatch> {
         internal const string GameModeName = "ConnectionTolerantDeathmatch";
         internal const string GameModeID = "ConnectionTolerantDeathmatch";
-
+        public override bool OnlineOnly => true;
         public ConnectionTolerantDeathmatchHandler() : base(
             name: GameModeName,
             gameModeId: GameModeID,
@@ -20,9 +20,8 @@ namespace CTD {
             maxPlayers: null,
             maxTeams: null,
             maxClients: null,
-            description: "Free For All Deathmatch. Last player standing wins.",
+            description: "Like Deathmatch, but people <i>Should</i> be able to leave/late join",
             videoURL: "https://github.com/olavim/RoundsWithFriends/raw/main/Media/Deathmatch.mp4") {
-
 
 
         }
