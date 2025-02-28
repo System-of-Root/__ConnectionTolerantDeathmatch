@@ -177,6 +177,7 @@ namespace CTD {
         public override IEnumerator DoStartGame() {
             if(!PhotonNetwork.IsMasterClient) {
                 statusType = ConectionStatusType.Conecting;
+                NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestConection), PhotonNetwork.LocalPlayer.ActorNumber);
             } else {
                 statusType = ConectionStatusType.GameStart;
             }
