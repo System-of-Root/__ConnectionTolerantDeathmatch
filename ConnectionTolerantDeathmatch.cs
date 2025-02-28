@@ -69,7 +69,7 @@ namespace CTD {
         }
 
         public void RquestLateJoin() {
-            PhotonNetwork.Instantiate(PlayerAssigner.instance.playerPrefab.name, Vector3.zero, Quaternion.identity, 0, [LatePlayerHandler.LateJoinPlayerString]);
+            PhotonNetwork.Instantiate(PlayerAssigner.instance.playerPrefab.name, Vector3.zero, Quaternion.identity, 0, new object[] { LatePlayerHandler.LateJoinPlayerString });
             NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestConection), PhotonNetwork.LocalPlayer.ActorNumber);
         }
 

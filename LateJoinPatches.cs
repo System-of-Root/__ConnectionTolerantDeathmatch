@@ -23,7 +23,7 @@ namespace CTD
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NetworkConnectionHandler), nameof(NetworkConnectionHandler.CreateRoom))]
         static void AddProperty(ref RoomOptions roomOptions) {
-            roomOptions.CustomRoomPropertiesForLobby = [ "active" ];
+            roomOptions.CustomRoomPropertiesForLobby = new string[] { "active" };
             roomOptions.CustomRoomProperties = new Hashtable { { "active", false } };
         }
     }
