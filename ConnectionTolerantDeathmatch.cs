@@ -50,6 +50,7 @@ namespace CTD {
         public List<Player> UnloadPlayers = new List<Player>();
 
         public void MasterSwitched(Photon.Realtime.Player newMaster) {
+            RWF.CardBarHandlerExtensions.Rebuild(CardBarHandler.instance);
             UIHandler.instance.DisplayRoundStartText("Host Disconected, Restarting round with new host.");
             this.StopAllCoroutines();
             if(statusType != ConectionStatusType.Joined)
@@ -68,8 +69,14 @@ namespace CTD {
         }
 
         public void RquestLateJoin() {
+            UnityEngine.Debug.Log("Requesting late join");
             PhotonNetwork.Instantiate(PlayerAssigner.instance.playerPrefab.name, Vector3.zero, Quaternion.identity, 0, new object[] { LatePlayerHandler.LateJoinPlayerString });
             NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestConection), PhotonNetwork.LocalPlayer.ActorNumber);
+            var cards = FindObjectsOfType<CardInfo>().Where(c => c.gameObject.scene.buildIndex != -1).ToList();
+            foreach(var card in cards) {
+                UnityEngine.Debug.Log(card);
+                Destroy(card.gameObject);
+            }
         }
 
         protected virtual void Update() {
@@ -206,12 +213,13 @@ namespace CTD {
             new WaitUntil(() => gameState == GameState.GameStart);
             if(!PlayerManager.instance.players.Any(p=>p.data.view.AmOwner))
                 NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestID), PhotonNetwork.LocalPlayer.ActorNumber);
-
             RWF.CardBarHandlerExtensions.Rebuild(CardBarHandler.instance);
             UIHandler.instance.InvokeMethod("SetNumberOfRounds", (int)GameModeManager.CurrentHandler.Settings["roundsToWinGame"]);
             ArtHandler.instance.NextArt();
 
             yield return GameModeManager.TriggerHook(GameModeHooks.HookGameStart);
+            if(PhotonNetwork.IsMasterClient)
+                PhotonNetwork.CurrentRoom.IsOpen = true;
 
             GameManager.instance.battleOngoing = false;
 

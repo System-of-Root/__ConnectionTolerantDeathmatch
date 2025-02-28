@@ -30,5 +30,10 @@ namespace CTD {
                 handler.GameMode.WaitingClients.Remove(otherPlayer.ActorNumber);
             }
         }
+        public override void OnJoinedRoom() {
+            if(PhotonNetwork.IsMasterClient) {
+                GameModeManager.SetGameMode(ConnectionTolerantDeathmatchHandler.GameModeID);
+            }
+        }
     }
 }

@@ -116,6 +116,8 @@ namespace CTD {
             UIHandler.instance.roundCounterSmall.GetData().teamPoints = newTeamPoints;
             UIHandler.instance.roundCounterSmall.GetData().teamRounds = newTeamRounds;
 
+
+            CardBarHandlerExtensions.Rebuild(CardBarHandler.instance);
         }
 
     }
