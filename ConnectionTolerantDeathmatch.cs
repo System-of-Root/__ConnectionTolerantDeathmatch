@@ -50,12 +50,11 @@ namespace CTD {
         public List<Player> UnloadPlayers = new List<Player>();
 
         public void MasterSwitched(Photon.Realtime.Player newMaster) {
-            UIHandler.instance.ShowJoinGameText("Host Disconected, Restarting round with new host.", PlayerSkinBank.GetPlayerSkinColors(1).winText);
+            UIHandler.instance.DisplayRoundStartText("Host Disconected, Restarting round with new host.");
             this.StopAllCoroutines();
             if(statusType != ConectionStatusType.Joined)
                 NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestConection), PhotonNetwork.LocalPlayer.ActorNumber);
             this.StartCoroutine(this.DoRoundStart());
-            this.ExecuteAfterFrames(10, UIHandler.instance.HideJoinGameText);
         }
 
         protected override void Awake() {
@@ -81,6 +80,7 @@ namespace CTD {
             if(!PhotonNetwork.IsMasterClient) return;
             int time = (int)Time.unscaledTime;
             if(time > lastBeat + 5) {
+                lastBeat = time;
                 NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(HeartbeatRequest), time);
                 foreach(int id in HeartBeatList.Keys) {
                     if(HeartBeatList[id] != -1 && time > HeartBeatList[id] + 60 && PhotonNetwork.CurrentRoom.Players.ContainsKey(id)) {
@@ -88,7 +88,7 @@ namespace CTD {
                     }
                 }
             }
-            if(gameState == GameState.Initializing && WaitingClients.Count == 0) {
+            if(gameState == GameState.Initializing && statusType == ConectionStatusType.GameStart && WaitingClients.Count == 0) {
                 gameState = GameState.GameStart;
                 NetworkingManager.RPC_Others(typeof(ConnectionTolerantDeathmatch), nameof(TriggerStart));
             }
@@ -96,6 +96,8 @@ namespace CTD {
         }
 
         public static void LoadNewPlayer(int ActorNumber, int TeamID, int PlayerID, int ColorID) {
+
+            UnityEngine.Debug.Log($"Loading Player {ActorNumber}, {TeamID}:{PlayerID}  ({ColorID})");
             Player player = instance.UnloadPlayers.Find(p => p.data.view.ControllerActorNr == ActorNumber);
             player.teamID = TeamID;
             player.playerID = PlayerID;
@@ -104,6 +106,7 @@ namespace CTD {
         }
 
         public static void RequestID(int ActorNumber) {
+            UnityEngine.Debug.Log($"ID request {ActorNumber}");
             if(!PhotonNetwork.IsMasterClient) return;
             int playerID = PlayerManager.instance.players.Count;
             int teamID = PlayerManager.instance.players.Count;
@@ -115,6 +118,7 @@ namespace CTD {
 
         [UnboundRPC]
         public static void TriggerStart() {
+            UnityEngine.Debug.Log($"Starting Game");
             instance.gameState = GameState.GameStart;
         }
         [UnboundRPC]
@@ -124,8 +128,10 @@ namespace CTD {
 
        [UnboundRPC]
         public static void RequestConection(int requestingPlayer) {
+            UnityEngine.Debug.Log($"Request Conection {requestingPlayer}");
             if(!PhotonNetwork.IsMasterClient) return;
-            instance.WaitingClients.Add(requestingPlayer);
+            if(!instance.WaitingClients.Contains(requestingPlayer))
+                instance.WaitingClients.Add(requestingPlayer);
             switch(instance.gameState) {
                 case GameState.Initializing:
                     NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(ConnectionResponce),requestingPlayer,(int)ConectionStatusType.GameStart);
@@ -145,18 +151,21 @@ namespace CTD {
 
         [UnboundRPC]
         public static void ConnectionResponce(int ActorId, int responce) {
+            UnityEngine.Debug.Log($"Request Responce {ActorId} {responce}");
             if(PhotonNetwork.LocalPlayer.ActorNumber != ActorId) return;
             instance.statusType = (ConectionStatusType)responce;
         }
 
         [UnboundRPC]
         public static void HeartbeatRequest(int data) {
+            UnityEngine.Debug.Log($"Heartbeat {data}");
             NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(HeartbeatResponce), PhotonNetwork.LocalPlayer.ActorNumber, data);
         }
 
 
         [UnboundRPC]
         public static void HeartbeatResponce(int ActorId, int data) {
+            UnityEngine.Debug.Log($"Heartbeat Responce {ActorId}, {data}");
             instance.HeartBeatList[ActorId] = data;
         }
 
@@ -167,6 +176,7 @@ namespace CTD {
         }
 
         public override void StartGame() {
+            UnityEngine.Debug.Log("GAME START");
             if(PhotonNetwork.IsMasterClient) {
                 PhotonNetwork.CurrentRoom.SetCustomProperties(new ExitGames.Client.Photon.Hashtable { { "active", true } });
             }
@@ -175,15 +185,21 @@ namespace CTD {
         }
 
         public override IEnumerator DoStartGame() {
+            UnityEngine.Debug.Log("DO GAME START");
             if(!PhotonNetwork.IsMasterClient) {
                 statusType = ConectionStatusType.Conecting;
                 NetworkingManager.RPC(typeof(ConnectionTolerantDeathmatch), nameof(RequestConection), PhotonNetwork.LocalPlayer.ActorNumber);
             } else {
+                foreach(Player player in PlayerManager.instance.players) {
+                    if(!player.data.view.IsMine && !instance.WaitingClients.Contains(player.data.view.ControllerActorNr))
+                        instance.WaitingClients.Add(player.data.view.ControllerActorNr);
+                }
                 statusType = ConectionStatusType.GameStart;
             }
 
             yield return new WaitUntil(() => statusType != ConectionStatusType.Conecting);
 
+            UnityEngine.Debug.Log("GAME START Conection: "+statusType.ToString());
             if(statusType != ConectionStatusType.GameStart) yield break;
             statusType = ConectionStatusType.Joined;
 
@@ -310,6 +326,8 @@ namespace CTD {
         }
 
         public virtual IEnumerator Pickphase(int[] winningTeamIDs = null) {
+
+            UnityEngine.Debug.Log($"Picking Time");
 
             gameState = GameState.Pickphase;
 
