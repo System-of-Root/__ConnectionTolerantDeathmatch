@@ -182,7 +182,7 @@ namespace CTD {
                 statusType = ConectionStatusType.GameStart;
             }
 
-            yield return new WaitUntil(() => statusType != ConectionStatusType.Waiting);
+            yield return new WaitUntil(() => statusType != ConectionStatusType.Conecting);
 
             if(statusType != ConectionStatusType.GameStart) yield break;
             statusType = ConectionStatusType.Joined;
