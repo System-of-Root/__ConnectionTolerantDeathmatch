@@ -1,0 +1,30 @@
+{
+    "name": "ConnectionTolerantDeathmatch",
+    "references": [
+        "UnboundLib",
+        "Unity.TextMeshPro",
+        "RoundsWithFriends",
+        "ModdingUtils"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "0Harmony.dll",
+        "BepInEx.dll",
+        "Assembly-CSharp.dll",
+        "PhotonRealtime.dll",
+        "Photon3Unity3D.dll",
+        "PhotonUnityNetworking.dll",
+        "SonigonAudioEngine.Runtime.dll",
+        "InControl.dll",
+        "PhotonUnityNetworking.Demos.dll",
+        "PhotonUnityNetworking.Utilities.dll",
+        "PhotonChat.dll",
+        "PhotonWebSocket.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
